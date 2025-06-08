@@ -57,3 +57,4 @@ You can also configure Pomo via environment variables:
 - `POMO_SOUND_ENABLED`: Enable/disable terminal bell sound (true/false)
 
 Environment variables take precedence over values in the config file.
+
