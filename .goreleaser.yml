@@ -1,0 +1,48 @@
+project_name: pomo
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./
+
+# Build configuration
+builds:
+  - binary: pomo
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+# Archive configuration
+archives:
+  - format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+      - README.md
+
+# Release configuration
+release:
+  github:
+    owner: {{.Env.GITHUB_REPOSITORY_OWNER}}
+    name: {{.Env.GITHUB_REPOSITORY_NAME}}
+  name_template: "{{.ProjectName}} {{.Version}}"
+  body: "{{.Notes}}"
+  draft: false
+  prerelease: false
+
+# Changelog configuration
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'

@@ -199,7 +199,11 @@ func playSound() {
 }
 
 func main() {
-	config := loadConfig()
+	config, err := loadConfig()
+	if err != nil {
+		fmt.Printf("Error loading config: %v\n", err)
+		os.Exit(1)
+	}
 
 	// Create initial model
 	model := &Model{
@@ -216,7 +220,7 @@ func main() {
 
 	// Start the program
 	p := tea.NewProgram(model)
-	_, err := p.Run()
+	_, err = p.Run()
 	if err != nil {
 		fmt.Printf("Error running program: %v\n", err)
 		os.Exit(1)
