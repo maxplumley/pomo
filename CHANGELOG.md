@@ -1,3 +1,10 @@
+## [1.0.6](https://github.com/maxplumley/pomo/compare/1.0.5...1.0.6) (2025-06-08)
+
+
+### Bug Fixes
+
+* force semantic-release ([bb8e25d](https://github.com/maxplumley/pomo/commit/bb8e25dd8ac8c8e606691254eb50c2500673f202))
+
 ## [1.0.5](https://github.com/maxplumley/pomo/compare/1.0.4...1.0.5) (2025-06-08)
 
 
