@@ -46,7 +46,7 @@ brews:
     commit_author:
       name: Max Plumley
       email: maxplumley1@gmail.com
-    folder: Formula
+    directory: Formula
     install: |
       bin.install "pomo"
     test: |
