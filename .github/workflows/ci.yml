@@ -48,4 +48,4 @@ jobs:
           args: release 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GORELEASER_CURRENT_TAG: v${{ steps.semantic-release.outputs.new_version }}
+          GORELEASER_CURRENT_TAG: ${{ steps.semantic-release.outputs.new_version }}
