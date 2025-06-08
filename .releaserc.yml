@@ -1,0 +1,23 @@
+branches:
+  - main
+  - name: next
+    prerelease: true
+plugins:
+  - "@semantic-release/commit-analyzer"
+  - "@semantic-release/release-notes-generator"
+  - "@semantic-release/changelog":
+      changelogFile: docs/CHANGELOG.md
+  - "@semantic-release/github":
+      assets:
+        - path: release/pomo-{{version}}.tar.gz
+          label: Pomo binary
+          name: pomo-{{version}}.tar.gz
+  - "@semantic-release/exec":
+      prepare:
+        - "./bump.sh ${nextRelease.version}"
+  - "@semantic-release/git":
+      assets:
+        - docs/CHANGELOG.md
+      message: "chore: release ${nextRelease.version} [skip ci]"
+tagFormat: ${version}
+preset: angular
