@@ -45,7 +45,7 @@ jobs:
         if: steps.semantic-release.outputs.should_release == 'true'
         uses: goreleaser/goreleaser-action@v4
         with:
-          args: release --release-notes-file $HOME/.release_notes.md
+          args: release --release-notes $HOME/.release_notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GORELEASER_CURRENT_TAG: ${{ steps.semantic-release.outputs.new_version }}
