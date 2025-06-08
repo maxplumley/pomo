@@ -14,9 +14,24 @@ A terminal-based Pomodoro timer with a clean, intuitive interface.
 
 ## Installation
 
-1. Ensure you have Go installed on your system
-2. Clone this repository
-3. Run `go run main.go` in a terminal
+### With the Pomo Homebrew tap
+
+```shell
+brew tap maxplumley/pomo
+brew install pomo
+```
+
+### Or from source
+
+Ensure you have Go (and Git) installed on your system, then run:
+
+```shell
+git clone https://github.com/maxplumley/pomo.git
+cd pomo
+go build .
+```
+
+Either run `./pomo` from the directory you cloned it to, or add it to your PATH to run from anywhere.
 
 ## Usage
 

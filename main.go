@@ -173,7 +173,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *Model) View() string {
 	ui := ""
 	if m.waiting {
-		ui = "Pomodoro Timer 🍅\n"
+		ui = "Pomo 🍅\n"
 	} else {
 		minutes := int(math.Ceil(m.remaining.Seconds())) / 60
 		seconds := int(math.Ceil(m.remaining.Seconds())) % 60
