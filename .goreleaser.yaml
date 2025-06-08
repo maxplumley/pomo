@@ -38,12 +38,17 @@ archives:
       - goos: windows
         formats: [zip]
 
-changelog:
-  sort: asc
-  filters:
-    exclude:
-      - "^docs:"
-      - "^test:"
+brews:
+  - name: pomo
+    description: A terminal-based Pomodoro timer with a clean, intuitive interface.
+    homepage: https://github.com/maxplumley/pomo
+    tap:
+      owner: maxplumley
+      name: pomo
+    commit_author:
+      name: Max Plumley
+      email: maxplumley1@gmail.com
+    folder: Formula
 
 release:
   footer: >-
