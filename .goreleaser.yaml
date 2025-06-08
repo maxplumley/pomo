@@ -42,13 +42,21 @@ brews:
   - name: pomo
     description: A terminal-based Pomodoro timer with a clean, intuitive interface.
     homepage: https://github.com/maxplumley/pomo
-    tap:
-      owner: maxplumley
-      name: pomo
+    commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
     commit_author:
       name: Max Plumley
       email: maxplumley1@gmail.com
     folder: Formula
+    install: |
+      bin.install "pomo"
+    test: |
+      system "#{bin}/pomo --version"
+    # Repository to push the generated files to.
+    repository:
+      owner: maxplumley
+      name: homebrew-pomo
+      branch: main
+      token: "{{ .Env.GITHUB_TOKEN }}"
 
 release:
   footer: >-
