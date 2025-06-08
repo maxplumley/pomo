@@ -21,12 +21,16 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm install -g semantic-release
+        run: npm install -g semantic-release @semantic-release/exec @semantic-release/changelog @semantic-release/git
 
       - name: Run semantic-release
+        id: semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: |
+          npx semantic-release
+          echo "should_release=${{ steps.semantic-release.outputs.should_release }}" >> $GITHUB_OUTPUT
+          echo "new_version=${{ steps.semantic-release.outputs.new_version }}" >> $GITHUB_OUTPUT
       
       - name: Setup Go
         uses: actions/setup-go@v4
