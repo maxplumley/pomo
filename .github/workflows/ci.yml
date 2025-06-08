@@ -45,7 +45,6 @@ jobs:
         if: steps.semantic-release.outputs.should_release == 'true'
         uses: goreleaser/goreleaser-action@v4
         with:
-          version: ${{ steps.semantic-release.outputs.new_version }}
           args: release 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
