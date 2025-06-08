@@ -14,6 +14,6 @@ echo "Release notes: $RELEASE_NOTES"
 
 echo "should_release=true" >> $GITHUB_OUTPUT
 echo "new_version=${VERSION}" >> $GITHUB_OUTPUT
-echo "release_notes=${RELEASE_NOTES}" >> $GITHUB_OUTPUT
+echo "release_notes=\"${RELEASE_NOTES}\"" >> $GITHUB_OUTPUT
 
 exit 0
