@@ -4,14 +4,14 @@ on:
   push:
     branches:
       - main
-    tags:
-      - "v*"
 
 jobs:
   release:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
+          cache: true
 
       - name: Install dependencies
         run: npm install -g semantic-release
@@ -35,7 +35,7 @@ jobs:
           go-version: '1.24'
           cache: true
       
-      - name: Run GoReleaser
+      - name: Release
         if: steps.release.outputs.should_release == 'true'
         uses: goreleaser/goreleaser-action@v4
         with:
