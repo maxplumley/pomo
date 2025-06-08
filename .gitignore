@@ -1,0 +1,76 @@
+# Go
+*.exe
+*.test
+*.out
+*.a
+*.o
+*.so
+*.syso
+*.h
+*.pdb
+*.dll
+*.dylib
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Build
+bin/
+dist/
+build/
+
+# Dependencies
+vendor/
+
+# Test coverage
+coverage.out
+
+# Go modules
+go.sum
+
+# OS files
+*.log
+*.pid
+*.lock
+
+# Local development
+.env
+.env.local
+.env.*.local
+
+# Debug
+*.pdb
+*.core
+
+# Editor
+*.bak
+*.tmp
+*~
+
+# Go cache
+# .cache/ # Uncomment if you want to exclude the Go cache
+
+# Go test
+*.test
+
+# Go build
+*.exe
+*.out
+*.a
+*.o
+*.so
+*.syso
+*.h
+*.pdb
+*.dll
+*.dylib
+
+# Go vendoring
+vendor/
+
+# Go modules
+# go.sum # Uncomment if you want to exclude the Go modules file
