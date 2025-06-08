@@ -31,6 +31,7 @@ type Model struct {
 	help      help.Model
 	waiting   bool
 	progress  progressBar
+	config    Config
 }
 
 // Initialize progress bar
@@ -42,11 +43,6 @@ func (m *Model) initProgress() {
 func (m *Model) updateProgress(duration time.Duration) {
 	m.progress.percent = 100 - int((m.remaining.Seconds()/float64(duration.Seconds()))*100)
 }
-
-const (
-	focusDuration = 25 * time.Minute
-	breakDuration = 5 * time.Minute
-)
 
 // Key bindings
 type keyMap struct {
@@ -117,7 +113,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.waiting = false
 				m.state = "Focus"
 				m.startTime = time.Now()
-				m.remaining = focusDuration
+				m.remaining = m.config.FocusDuration
 				m.initProgress()
 				return m, tick()
 			}
@@ -127,7 +123,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.waiting = false
 				m.state = "Break"
 				m.startTime = time.Now()
-				m.remaining = breakDuration
+				m.remaining = m.config.BreakDuration
 				m.initProgress()
 				return m, tick()
 			}
@@ -151,8 +147,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if elapsed >= m.remaining {
 			// Session complete, enter waiting state
 			m.waiting = true
-			// Play sound
-			playSound()
+			// Play sound if enabled
+			if m.config.SoundEnabled {
+				playSound()
+			}
 			return m, nil
 		}
 
@@ -161,9 +159,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.startTime = time.Now()
 		// Update progress bar
 		if m.state == "Focus" {
-			m.updateProgress(focusDuration)
+			m.updateProgress(m.config.FocusDuration)
 		} else {
-			m.updateProgress(breakDuration)
+			m.updateProgress(m.config.BreakDuration)
 		}
 
 		// Keep the timer running
@@ -201,6 +199,8 @@ func playSound() {
 }
 
 func main() {
+	config := loadConfig()
+
 	// Create initial model
 	model := &Model{
 		state:   "",
@@ -209,8 +209,9 @@ func main() {
 		progress: progressBar{
 			percent: 0,
 		},
-		keys: keys,
-		help: help.New(),
+		keys:   keys,
+		help:   help.New(),
+		config: config,
 	}
 
 	// Start the program
