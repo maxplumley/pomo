@@ -13,8 +13,7 @@ plugins:
           label: Pomo binary
           name: pomo-{{version}}.tar.gz
   - "@semantic-release/exec":
-      prepare:
-        - "./bump.sh ${nextRelease.version}"
+      prepareCmd: "./bump.sh ${nextRelease.version} ${shouldRelease}"
   - "@semantic-release/git":
       assets:
         - docs/CHANGELOG.md

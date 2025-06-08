@@ -1,13 +1,20 @@
 #!/bin/bash
 
-# Check if argument is provided
-if [ $# -eq 0 ]; then
-    echo "Error: No version number provided"
-    echo "Usage: $0 <version>"
+# Check if both arguments are provided
+if [ $# -ne 2 ]; then
+    echo "Error: Invalid number of arguments"
+    echo "Usage: $0 <version> <should_release>"
     exit 1
 fi
 
-# Store the version number
+# Store the arguments
 VERSION="$1"
+SHOULD_RELEASE="$2"
 
 echo "Bumping version to: $VERSION"
+echo "Release status: $SHOULD_RELEASE"
+
+echo "should_release=${SHOULD_RELEASE}" >> $GITHUB_OUTPUT
+echo "new_version=${VERSION}" >> $GITHUB_OUTPUT
+
+exit 0
