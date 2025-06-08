@@ -14,7 +14,7 @@ SHOULD_RELEASE="$2"
 echo "Bumping version to: $VERSION"
 echo "Release status: $SHOULD_RELEASE"
 
-echo "should_release=${SHOULD_RELEASE}" >> $GITHUB_OUTPUT
+echo "should_release=true" >> $GITHUB_OUTPUT
 echo "new_version=${VERSION}" >> $GITHUB_OUTPUT
 
 exit 0

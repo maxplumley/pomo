@@ -27,10 +27,7 @@ jobs:
         id: semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npx semantic-release
-          echo "should_release=${{ steps.semantic-release.outputs.should_release }}" >> $GITHUB_OUTPUT
-          echo "new_version=${{ steps.semantic-release.outputs.new_version }}" >> $GITHUB_OUTPUT
+        run: npx semantic-release
       
       - name: Setup Go
         uses: actions/setup-go@v4
@@ -39,7 +36,7 @@ jobs:
           cache: true
       
       - name: Release
-        if: steps.release.outputs.should_release == 'true'
+        if: steps.semantic-release.outputs.should_release == 'true'
         uses: goreleaser/goreleaser-action@v4
         with:
           version: latest
