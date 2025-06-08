@@ -9,6 +9,8 @@ jobs:
   release:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
+    environment:
+      name: release
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -48,4 +50,5 @@ jobs:
           args: release --release-notes /tmp/release_notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
           GORELEASER_CURRENT_TAG: ${{ steps.semantic-release.outputs.new_version }}
