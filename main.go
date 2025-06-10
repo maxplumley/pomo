@@ -11,6 +11,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	log "github.com/sirupsen/logrus"
 )
 
 // Custom message types
@@ -21,17 +22,26 @@ type progressBar struct {
 	percent int
 }
 
+// AppState represents the current state of the application
+type AppState string
+
+const (
+	AppStateWaiting AppState = "waiting"
+	AppStateFocus   AppState = "focus"
+	AppStateBreak   AppState = "break"
+)
+
 // Model represents our app's state
 type Model struct {
-	state     string
+	state     AppState
 	startTime time.Time
 	remaining time.Duration
 	style     lipgloss.Style
 	keys      keyMap
 	help      help.Model
-	waiting   bool
 	progress  progressBar
 	config    Config
+	sound     *SoundManager
 }
 
 // Initialize progress bar
@@ -95,6 +105,14 @@ func tick() tea.Cmd {
 	return tea.Tick(100*time.Millisecond, func(t time.Time) tea.Msg { return tickMsg{} })
 }
 
+func playSound(soundType SoundType, soundManager *SoundManager) tea.Cmd {
+	return func() tea.Msg {
+		sound := soundManager.PlaySound(soundType)
+		<-sound
+		return nil
+	}
+}
+
 func (m *Model) Init() tea.Cmd {
 	return nil
 }
@@ -109,56 +127,61 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.help.ShowAll = !m.help.ShowAll
 		}
 		if key.Matches(msg, keys.Focus) {
-			if m.waiting {
-				m.waiting = false
-				m.state = "Focus"
+			if m.state == AppStateWaiting {
+				m.state = AppStateFocus
 				m.startTime = time.Now()
 				m.remaining = m.config.FocusDuration
 				m.initProgress()
-				return m, tick()
+				return m, tea.Batch(playSound(FocusStart, m.sound), tick())
 			}
 		}
 		if key.Matches(msg, keys.Break) {
-			if m.waiting {
-				m.waiting = false
-				m.state = "Break"
+			if m.state == AppStateWaiting {
+				m.state = AppStateBreak
 				m.startTime = time.Now()
 				m.remaining = m.config.BreakDuration
 				m.initProgress()
-				return m, tick()
+				return m, tea.Batch(playSound(BreakStart, m.sound), tick())
 			}
 		}
 		if key.Matches(msg, keys.End) {
-			if !m.waiting {
-				m.waiting = true
+			if m.state != AppStateWaiting {
+				m.state = AppStateWaiting
+				if m.state == AppStateFocus {
+					return m, tea.Batch(playSound(FocusCancel, m.sound), tick())
+				} else {
+					return m, tea.Batch(playSound(BreakCancel, m.sound), tick())
+				}
 			}
 			return m, nil
 		}
 		if key.Matches(msg, keys.Quit) {
+			m.sound.Cleanup()
 			return m, tea.Quit
 		}
 		return m, nil
 	case tickMsg:
-		if m.waiting {
+		if m.state == AppStateWaiting {
 			return m, nil
 		}
 
 		elapsed := time.Since(m.startTime)
 		if elapsed >= m.remaining {
 			// Session complete, enter waiting state
-			m.waiting = true
-			// Play sound if enabled
-			if m.config.SoundEnabled {
-				playSound()
+			if m.state == AppStateFocus {
+				m.state = AppStateWaiting
+				return m, tea.Batch(playSound(FocusEnd, m.sound), tick())
+			} else {
+				m.state = AppStateWaiting
+				return m, tea.Batch(playSound(BreakEnd, m.sound), tick())
 			}
-			return m, nil
 		}
 
 		// Update remaining time
 		m.remaining = m.remaining - elapsed
 		m.startTime = time.Now()
 		// Update progress bar
-		if m.state == "Focus" {
+		if m.state == AppStateFocus {
 			m.updateProgress(m.config.FocusDuration)
 		} else {
 			m.updateProgress(m.config.BreakDuration)
@@ -172,17 +195,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *Model) View() string {
 	ui := ""
-	if m.waiting {
-		ui = "Pomo 🍅\n"
+	if m.state == AppStateWaiting {
+		ui = "pomo 🍅\n"
 	} else {
 		minutes := int(math.Ceil(m.remaining.Seconds())) / 60
 		seconds := int(math.Ceil(m.remaining.Seconds())) % 60
 		timeStr := fmt.Sprintf("%dm %ds", minutes, seconds)
 		var s string
-		if m.state == "Focus" {
-			s = "Focusing"
+		if m.state == AppStateFocus {
+			s = "focusing"
 		} else {
-			s = "Recharging"
+			s = "recharging"
 		}
 
 		// Create progress bar string
@@ -194,35 +217,45 @@ func (m *Model) View() string {
 	return m.style.Render(ui + "\n\n" + m.help.View(m.keys))
 }
 
-func playSound() {
-	fmt.Print("\a\r") // Terminal beep
-}
-
 func main() {
-	config, err := loadConfig()
+	err := initLogger()
 	if err != nil {
-		fmt.Printf("Error loading config: %v\n", err)
+		log.Errorf("error initializing logger: %v", err)
 		os.Exit(1)
 	}
 
-	// Create initial model
-	model := &Model{
-		state:   "",
-		waiting: true,
-		style:   lipgloss.NewStyle().Padding(1, 2),
-		progress: progressBar{
-			percent: 0,
-		},
+	config, err := loadConfig()
+	if err != nil {
+		log.Errorf("error loading config: %v", err)
+		os.Exit(1)
+	}
+
+	// Initialize style
+	style := lipgloss.NewStyle().
+		Padding(1, 2)
+
+	// Initialize sound manager
+	soundManager := NewSoundManager(config.SoundConfig)
+	if err := soundManager.Init(); err != nil {
+		log.Errorf("error initializing sound manager: %v", err)
+		os.Exit(1)
+	}
+
+	// Initialize model
+	model := Model{
+		state:  AppStateWaiting,
+		style:  style,
 		keys:   keys,
 		help:   help.New(),
 		config: config,
+		sound:  soundManager,
 	}
 
 	// Start the program
-	p := tea.NewProgram(model)
+	p := tea.NewProgram(&model)
 	_, err = p.Run()
 	if err != nil {
-		fmt.Printf("Error running program: %v\n", err)
+		fmt.Printf("error running program: %v\n", err)
 		os.Exit(1)
 	}
 }
