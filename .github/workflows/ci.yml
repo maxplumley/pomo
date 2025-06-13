@@ -56,7 +56,7 @@ jobs:
           github.ref == 'refs/heads/main'
         uses: goreleaser/goreleaser-action@v4
         with:
-          args: release --release-notes /tmp/release_notes.md
+          args: release --clean --release-notes /tmp/release_notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
