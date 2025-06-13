@@ -19,7 +19,7 @@ builds:
   - env:
       - CGO_ENABLED=0
     goos:
-      - linux
+      # - linux # TODO: add linux support, not curretly working due to dependency on github.com/ebitengine/oto/v3 (via Beep)
       - windows
       - darwin
 

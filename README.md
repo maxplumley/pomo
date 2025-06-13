@@ -1,4 +1,4 @@
-<img style="max-width:600px;width:100%" src = "docs/pomo.png"/>
+<img style="max-width:300px" src = "docs/pomo.png"/>
 
 # Pomo 🍅
 
