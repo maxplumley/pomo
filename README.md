@@ -1,6 +1,14 @@
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=maxplumley_pomo&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=maxplumley_pomo)
+
+<div class="title-block" style="text-align: cent
+er;" align="center">
 
 <img style="width:300px" src = "docs/pomo.png"/>
+
+[![GitHub Release](https://img.shields.io/github/v/release/maxplumley/pomo)](https://github.com/maxplumley/pomo/releases/latest)
+[![GitHub License](https://img.shields.io/github/license/maxplumley/pomo)](https://github.com/maxplumley/pomo/blob/main/LICENSE)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=maxplumley_pomo&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=maxplumley_pomo)
+
+</div>
 
 # Pomo 🍅
 
