@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/maxplumley/pomo/compare/1.0.17...1.1.0) (2025-06-13)
+
+
+### Features
+
+* play custom sounds from MP3 files ([328bb13](https://github.com/maxplumley/pomo/commit/328bb136e94df7e98f0142f1eb3144762f7be117))
+
 ## [1.0.17](https://github.com/maxplumley/pomo/compare/1.0.16...1.0.17) (2025-06-08)
 
 
