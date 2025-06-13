@@ -1,3 +1,10 @@
+## [1.1.1-next.1](https://github.com/maxplumley/pomo/compare/1.1.0...1.1.1-next.1) (2025-06-13)
+
+
+### Bug Fixes
+
+* fix build ([6a723b2](https://github.com/maxplumley/pomo/commit/6a723b20791ce91f62240bfbbc3ac0edea076216))
+
 # [1.1.0](https://github.com/maxplumley/pomo/compare/1.0.17...1.1.0) (2025-06-13)
 
 
