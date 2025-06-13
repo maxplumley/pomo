@@ -46,11 +46,7 @@ jobs:
       - name: Package
         uses: goreleaser/goreleaser-action@v4
         with:
-          args: build
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
-          GORELEASER_CURRENT_TAG: ${{ steps.semantic-release.outputs.new_version }}
+          args: build --clean
       
       - name: Release
         if: |
