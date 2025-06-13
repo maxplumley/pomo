@@ -1,3 +1,20 @@
+# [1.1.0-next.1](https://github.com/maxplumley/pomo/compare/1.0.17...1.1.0-next.1) (2025-06-13)
+
+
+### Bug Fixes
+
+* fix build ([6905764](https://github.com/maxplumley/pomo/commit/690576480c46c22469126cb1e63b87daf48e8446))
+* fix build ([da4c455](https://github.com/maxplumley/pomo/commit/da4c4550013da7da584987387224457d54638953))
+* fix build ([10710b4](https://github.com/maxplumley/pomo/commit/10710b4ff25d5cfeb522f10a172d8e2ad284a706))
+* fix build ([10c4264](https://github.com/maxplumley/pomo/commit/10c42641117cf5acccd99861240020992ba63fd3))
+* fix build ([3411750](https://github.com/maxplumley/pomo/commit/3411750c55935978db2ab8594a5c35ae4a6b8b65))
+* fix build ([0b8e8e0](https://github.com/maxplumley/pomo/commit/0b8e8e0fb22621790ae3d3a5c0368d031d80a956))
+
+
+### Features
+
+* play custom sounds from MP3 files ([e553abe](https://github.com/maxplumley/pomo/commit/e553abea533077441fe0c60ed65749096c162c77))
+
 ## [1.0.17](https://github.com/maxplumley/pomo/compare/1.0.16...1.0.17) (2025-06-08)
 
 
