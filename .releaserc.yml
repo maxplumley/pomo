@@ -5,11 +5,7 @@ branches:
 plugins:
   - "@semantic-release/commit-analyzer"
   - "@semantic-release/release-notes-generator"
-  - - "@semantic-release/changelog"
-    - changelogFile: CHANGELOG.md
   - - "@semantic-release/exec"
     - publishCmd: "./bump.sh ${nextRelease.version} \"${nextRelease.notes}\""
-  - - "@semantic-release/git"
-    - message: "chore(release): release ${nextRelease.version} [skip ci]"
 tagFormat: ${version}
 preset: angular
