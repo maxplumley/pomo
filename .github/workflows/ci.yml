@@ -45,8 +45,7 @@ jobs:
           cache: true
       
       - name: Package
-        if: |
-          steps.semantic-release.outputs.should_release == 'true' &&
+        if: steps.semantic-release.outputs.should_release == 'true' 
         uses: goreleaser/goreleaser-action@v4
         with:
           args: build --clean
