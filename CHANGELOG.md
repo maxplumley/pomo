@@ -1,3 +1,11 @@
+# [1.1.0-next.2](https://github.com/maxplumley/pomo/compare/1.1.0-next.1...1.1.0-next.2) (2025-06-13)
+
+
+### Bug Fixes
+
+* force semantic release ([7a00cc9](https://github.com/maxplumley/pomo/commit/7a00cc97e5aa52310d39bc19308e4bc5aefee8e6))
+* force semantic release ([fb19267](https://github.com/maxplumley/pomo/commit/fb19267bd49da4736e9a22759cafaeb9a750eaeb))
+
 # [1.1.0-next.1](https://github.com/maxplumley/pomo/compare/1.0.17...1.1.0-next.1) (2025-06-13)
 
 
