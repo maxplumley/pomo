@@ -17,14 +17,11 @@ before:
 
 builds:
   - env:
-      - CGO_ENABLED=1
+      - CGO_ENABLED=0
     goos:
-      - linux
+      # - linux # TODO: add linux support, not curretly working due to dependency on github.com/ebitengine/oto/v3 (via Beep)
       - windows
       - darwin
-    goarch:
-      - amd64
-      - arm64
 
 archives:
   - formats: [tar.gz]
