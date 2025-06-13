@@ -4,6 +4,8 @@
 
 A terminal-based Pomodoro timer with a clean, intuitive interface.
 
+![Pomo](docs/pomo.gif)
+
 ## Features
 
 - 25-minute focus sessions
