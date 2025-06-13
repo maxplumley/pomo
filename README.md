@@ -1,3 +1,5 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=maxplumley_pomo&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=maxplumley_pomo)
+
 <img style="width:300px" src = "docs/pomo.png"/>
 
 # Pomo 🍅
