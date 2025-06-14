@@ -12,7 +12,7 @@ er;" align="center">
 
 # Pomo 🍅
 
-A terminal-based Pomodoro timer with a clean, intuitive interface.
+A terminal-based [Pomodoro](https://en.wikipedia.org/wiki/Pomodoro_Technique) timer.
 
 ![Pomo](docs/pomo.gif)
 
