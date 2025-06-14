@@ -100,4 +100,4 @@ sound:
 
 ## Debugging 
 
-Logs are written to `~/.pomo/_logs/pomo.log`. The default log level is `warn`, by you can increase log verbosity by passing the `-v` (or `-vv` for debug logging) flag to `pomo`.
+Logs are written to `~/.pomo/_logs/pomo.log`. The default log level is `warn`. You can increase log verbosity by passing the `-v` (or `-vv` for debug logging) flag to `pomo`.
