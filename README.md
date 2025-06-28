@@ -56,6 +56,7 @@ pomo
 ### Key Bindings
 - `f`: Start focus session
 - `b`: Start break session
+- `[n]p`: Start `n` pomodoro sessions - a focus session followed by a break session, repeated n times 
 - `e`: End current session
 - `q`: Quit Pomo
 
@@ -92,7 +93,7 @@ Environment variables take precedence over values in the config file.
 
 ### Sounds
 
-Impress those around you with custom sounds. By default Pomo will play the terminal bell when a session starts or ends, but you can also configure custom sounds for each event via the config file. Custom sounds can be provided as a remote URL or a local path. Sounds from remote URLs are downloaded to `~/.pomo/sounds` and cached there for future use. Only MP3 files are supported. See below for an example config that sets the break end sound to play one of the sample MP3s from the `soundz` directory on the `main` branch of this repository.
+Impress those around you with custom sounds. By default Pomo will play the terminal bell when a session starts or ends, but you can also configure custom sounds for each event via the config file. Custom sounds can be provided as a remote URL or a local path. Sounds from remote URLs are downloaded to `~/.pomo/sounds` and cached there for future use. Only MP3 files are supported. See below for an example config that sets the break end sound to play one of the sample MP3s from the `soundz` directory on the `main` branch of this repository. Note that during pomo sessions only the 'start' focus and break sounds are played, except for the final break session during which both the 'start' and 'end' sounds are played.
 
 ```yaml
 sound:

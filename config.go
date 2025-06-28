@@ -22,7 +22,7 @@ func loadConfig() (Config, error) {
 	viper.SetDefault("break-duration", 5*time.Minute)
 	viper.SetDefault("sound.sound-enabled", true)
 	viper.SetEnvPrefix("POMO")
-	viper.SetEnvKeyReplacer(strings.NewReplacer("_", ".", "-", ""))
+	viper.SetEnvKeyReplacer(strings.NewReplacer("_", "."))
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
