@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gopxl/beep"
@@ -87,24 +88,29 @@ func (sm *SoundManager) Init() error {
 		FocusCancel: sm.config.FocusCancel,
 	}
 
+	group := sync.WaitGroup{}
 	for soundType, soundPath := range soundsToDownload {
 		if soundPath != "" {
-			log.Debugf("loading sound %s: %s", soundType, soundPath)
-			localPath, err := cacheSound(soundPath)
+			group.Add(1)
+			go func(soundType SoundType, soundPath string) {
+				log.Debugf("loading sound %s: %s", soundType, soundPath)
+				localPath, err := cacheSound(soundPath)
 
-			if err == nil {
-				sound, err := loadSound(localPath, sampleRate)
 				if err == nil {
-					sm.sounds[soundType] = *sound
+					sound, err := loadSound(localPath, sampleRate)
+					if err == nil {
+						sm.sounds[soundType] = *sound
+					} else {
+						log.Warnf("failed to load sound %s: %v", soundType, err)
+					}
 				} else {
 					log.Warnf("failed to load sound %s: %v", soundType, err)
 				}
-			} else {
-				log.Warnf("failed to load sound %s: %v", soundType, err)
-			}
+				group.Done()
+			}(soundType, soundPath)
 		}
 	}
-
+	group.Wait()
 	return nil
 }
 
@@ -129,6 +135,7 @@ func loadSound(path string, speakerSampleRate beep.SampleRate) (*Sound, error) {
 	resampled := beep.Resample(4, speakerSampleRate, format.SampleRate, streamer)
 	buffer := beep.NewBuffer(format)
 	buffer.Append(resampled)
+	log.Debugf("loaded sound %s", path)
 	return &Sound{
 		path:   path,
 		buffer: buffer,
