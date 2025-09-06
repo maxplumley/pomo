@@ -1,8 +1,8 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -11,52 +11,33 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	gloss "github.com/charmbracelet/lipgloss"
 	log "github.com/sirupsen/logrus"
 )
 
 // Custom message types
 type tickMsg struct{}
 
-// Progress bar state
-type progressBar struct {
-	percent int
-}
-
-// AppState represents the current state of the application
-type AppState string
-
-const (
-	AppStateWaiting AppState = "waiting"
-	AppStateFocus   AppState = "focus"
-	AppStateBreak   AppState = "break"
-)
+type endMsg struct{}
 
 // Model represents our app's state
 type Model struct {
-	state         AppState
-	startTime     time.Time
-	timeRemaining time.Duration
-	style         lipgloss.Style
-	keys          keyMap
-	help          help.Model
-	progress      progressBar
-	config        Config
-	sound         *SoundManager
-	numberInput   int
-	pomosRequired int
-	pomo          int
+	ending      bool
+	lastTick    time.Time
+	interactive bool
+	pomCon      PomCon
+	style       gloss.Style
+	keys        keyMap
+	help        help.Model
+	config      Config
+	sound       *SoundManager
+	numberInput int
 }
 
-// Initialize progress bar
-func (m *Model) initProgress() {
-	m.progress.percent = 0
-}
-
-// Update progress bar
-func (m *Model) updateProgress(duration time.Duration) {
-	m.progress.percent = 100 - int((m.timeRemaining.Seconds()/float64(duration.Seconds()))*100)
-}
+var (
+	versionFlag = flag.Bool("version", false, "print pomo version")
+	version     = "unknown"
+)
 
 // Key bindings
 type keyMap struct {
@@ -119,63 +100,38 @@ func tick() tea.Cmd {
 	return tea.Tick(100*time.Millisecond, func(t time.Time) tea.Msg { return tickMsg{} })
 }
 
-func startFocus(m *Model) tea.Cmd {
-	m.startTime = time.Now()
-	m.timeRemaining = m.config.FocusDuration
-	m.state = AppStateFocus
-	m.initProgress()
-	return playSound(FocusStart, m.sound)
-}
-
-func endFocus(m *Model) tea.Cmd {
-	m.timeRemaining = 0
-	if m.pomosRequired > 0 {
-		return startBreak(m)
+func start(m *Model, p PomCon) tea.Cmd {
+	m.pomCon = p
+	current := p.Current(m.config.FocusDuration, m.config.BreakDuration)
+	if current.t == FocusSession {
+		return playSound(FocusStart, m.sound, nil)
+	} else {
+		return playSound(BreakStart, m.sound, nil)
 	}
-	m.state = AppStateWaiting
-	return playSound(FocusEnd, m.sound)
 }
 
-func cancelFocus(m *Model) tea.Cmd {
-	m.timeRemaining = 0
-	m.state = AppStateWaiting
-	return playSound(FocusCancel, m.sound)
+func end(m *Model) tea.Cmd {
+	m.ending = true
+	m.sound.Cleanup()
+	return tea.Quit
 }
 
-func startBreak(m *Model) tea.Cmd {
-	m.startTime = time.Now()
-	m.timeRemaining = m.config.BreakDuration
-	m.state = AppStateBreak
-	m.initProgress()
-	return playSound(BreakStart, m.sound)
-}
-
-func endBreak(m *Model) tea.Cmd {
-	m.timeRemaining = 0
-	m.pomo = m.pomo + 1
-	if m.pomosRequired > 0 && m.pomo <= m.pomosRequired {
-		return startFocus(m)
-	}
-	m.state = AppStateWaiting
-	return playSound(BreakEnd, m.sound)
-}
-
-func cancelBreak(m *Model) tea.Cmd {
-	m.timeRemaining = 0
-	m.state = AppStateWaiting
-	return playSound(BreakCancel, m.sound)
-}
-
-func playSound(soundType SoundType, soundManager *SoundManager) tea.Cmd {
+func playSound(soundType SoundType, soundManager *SoundManager, endSound tea.Msg) tea.Cmd {
 	return func() tea.Msg {
 		sound := soundManager.PlaySound(soundType)
-		<-sound
-		return nil
+		if sound != nil {
+			<-sound
+		}
+		return endSound
 	}
 }
 
 func (m *Model) Init() tea.Cmd {
-	return nil
+	m.lastTick = time.Now()
+	if m.pomCon != nil {
+		return tea.Sequence(tick(), start(m, m.pomCon))
+	}
+	return tick()
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -197,143 +153,209 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if key.Matches(msg, keys.Pomo) {
 			pomosRequired := m.numberInput
 			m.numberInput = 0
-			if m.state == AppStateWaiting {
-				m.pomosRequired = max(1, pomosRequired)
-				m.pomo = 1
-				return m, tea.Batch(startFocus(m), tick())
+			if m.pomCon == nil {
+				var pomCon PomCon = &PomConNode{
+					focusDuration: DURATION_DEFAULT,
+					breakDuration: DURATION_DEFAULT,
+				}
+				if pomosRequired > 1 {
+					pomCon = &PomConRepeatNode{
+						repeat: pomosRequired,
+						child:  pomCon,
+					}
+				}
+				return m, start(m, pomCon)
 			}
 		}
 		if key.Matches(msg, keys.Focus) {
-			m.pomo = 0
-			m.pomosRequired = 0
 			m.numberInput = 0
-			if m.state == AppStateWaiting {
-				return m, tea.Batch(startFocus(m), tick())
+			if m.pomCon == nil {
+				return m, start(m, &PomConNode{
+					focusDuration: DURATION_DEFAULT,
+					breakDuration: DURATION_NOT_SET,
+				})
 			}
 		}
 		if key.Matches(msg, keys.Break) {
-			m.pomo = 0
-			m.pomosRequired = 0
 			m.numberInput = 0
-			if m.state == AppStateWaiting {
-				return m, tea.Batch(startBreak(m), tick())
+			if m.pomCon == nil {
+				return m, start(m, &PomConNode{
+					focusDuration: DURATION_NOT_SET,
+					breakDuration: DURATION_DEFAULT,
+				})
 			}
 		}
 		if key.Matches(msg, keys.End) {
-			m.pomo = 0
-			m.pomosRequired = 0
 			m.numberInput = 0
-			if m.state == AppStateFocus {
-				return m, tea.Batch(cancelFocus(m), tick())
-			} else if m.state == AppStateBreak {
-				return m, tea.Batch(cancelBreak(m), tick())
+			if m.pomCon == nil {
+				return m, nil
 			}
-			return m, nil
+			current := m.pomCon.Current(m.config.FocusDuration, m.config.BreakDuration)
+			m.pomCon = nil
+			var soundEnd tea.Msg = nil
+			if !m.interactive {
+				m.ending = true
+				soundEnd = endMsg{}
+			}
+			if current.t == FocusSession {
+				return m, playSound(FocusCancel, m.sound, soundEnd)
+			}
+			return m, playSound(BreakCancel, m.sound, soundEnd)
 		}
 		if key.Matches(msg, keys.Quit) {
-			m.sound.Cleanup()
-			return m, tea.Quit
+			return m, end(m)
 		}
 		return m, nil
 	case tickMsg:
-		if m.state == AppStateWaiting {
-			return m, nil
+		if m.pomCon == nil {
+			m.lastTick = time.Now()
+			return m, tick()
 		}
 
-		elapsed := time.Since(m.startTime)
-		if elapsed >= m.timeRemaining {
-			// Session complete, enter waiting state
-			if m.state == AppStateFocus {
-				return m, tea.Batch(endFocus(m), tick())
-			} else if m.state == AppStateBreak {
-				return m, tea.Batch(endBreak(m), tick())
+		current := m.pomCon.Current(m.config.FocusDuration, m.config.BreakDuration)
+		elapsed := time.Since(m.lastTick)
+		m.lastTick = time.Now()
+		m.pomCon.Tick(elapsed, m.config.FocusDuration, m.config.BreakDuration)
+		next := m.pomCon.Current(m.config.FocusDuration, m.config.BreakDuration)
+
+		if m.pomCon.Complete(m.config.FocusDuration, m.config.BreakDuration) {
+			m.pomCon = nil
+			var soundEnd tea.Msg = nil
+			if !m.interactive {
+				m.ending = true
+				soundEnd = endMsg{}
 			}
+			if current.t == FocusSession {
+				return m, tea.Sequence(tick(), playSound(FocusEnd, m.sound, soundEnd))
+			}
+			return m, tea.Sequence(tick(), playSound(BreakEnd, m.sound, soundEnd))
 		}
 
-		// Update remaining time
-		m.timeRemaining = m.timeRemaining - elapsed
-		m.startTime = time.Now()
-		// Update progress bar
-		if m.state == AppStateFocus {
-			m.updateProgress(m.config.FocusDuration)
-		} else {
-			m.updateProgress(m.config.BreakDuration)
+		if current.t != next.t {
+			if next.t == FocusSession {
+				return m, tea.Sequence(tick(), playSound(FocusStart, m.sound, nil))
+			}
+			return m, tea.Sequence(tick(), playSound(BreakStart, m.sound, nil))
 		}
 
-		// Keep the timer running
 		return m, tick()
+	case endMsg:
+		return m, end(m)
 	}
 	return m, nil
 }
 
 func (m *Model) View() string {
 	ui := ""
-	if m.state == AppStateWaiting {
+	if m.pomCon == nil || m.pomCon.Complete(m.config.FocusDuration, m.config.BreakDuration) {
 		ui = "pomo 🍅\n"
+		if m.ending {
+			ui = ui + "ending...\n"
+		}
 	} else {
-		minutes := int(math.Ceil(m.timeRemaining.Seconds())) / 60
-		seconds := int(math.Ceil(m.timeRemaining.Seconds())) % 60
+		current := m.pomCon.Current(m.config.FocusDuration, m.config.BreakDuration)
+
+		remaining := current.duration - current.elapsed
+
+		minutes := remaining / time.Minute
+		seconds := (remaining % time.Minute) / time.Second
 		timeStr := fmt.Sprintf("%dm %ds", minutes, seconds)
 		var s string
-		if m.state == AppStateFocus {
+		if current.t == FocusSession {
 			s = "focusing"
 		} else {
 			s = "recharging"
 		}
 
 		barWidth := 50
-		if m.pomosRequired > 0 {
-			cycle := fmt.Sprintf("%d/%d", m.pomo, m.pomosRequired)
-			s = s + strings.Repeat(" ", barWidth-len(s)-len(cycle)) + cycle
+
+		printer := NewProgressPrinter(m.config.FocusDuration, m.config.BreakDuration)
+		err := Crawl(m.pomCon, printer)
+		if err != nil {
+			log.Errorf("error printing pomcon %v", err)
+		} else {
+			cycle := printer.v.b.String()
+			s = s + strings.Repeat(" ", barWidth-len(s)-gloss.Width(cycle)) + cycle
 		}
 
 		// Create progress bar string
-		filled := int(float64(barWidth) * float64(m.progress.percent) / 100.0)
+		filled := int(float64(barWidth) * float64(current.elapsed) / float64(current.duration))
 		bar := strings.Repeat("█", filled) + strings.Repeat("░", barWidth-filled)
 		ui = s + "\n" + bar + " " + timeStr
 	}
 	return m.style.Render(ui + "\n\n" + m.help.View(m.keys))
 }
 
+func initModel(config Config, soundManager *SoundManager, pomCon PomCon) Model {
+	// Initialize style
+	style := gloss.NewStyle().
+		Padding(1, 2)
+
+	interactive := true
+	if pomCon != nil {
+		interactive = false
+	}
+
+	model := Model{
+		interactive: interactive,
+		pomCon:      pomCon,
+		style:       style,
+		keys:        keys,
+		help:        help.New(),
+		config:      config,
+		sound:       soundManager,
+	}
+	return model
+}
+
 func main() {
+
+	flag.Parse()
+	if *versionFlag {
+		fmt.Println(version)
+		os.Exit(0)
+	}
 	err := initLogger()
 	if err != nil {
-		log.Errorf("error initializing logger: %v", err)
+		fmt.Println(fmt.Errorf("error initializing logger: %w", err))
+		os.Exit(2)
+	}
+
+	args := flag.Args()
+	if len(args) > 1 {
+		fmt.Printf("invalid arguments\n")
 		os.Exit(1)
+	}
+
+	var pomCon PomCon
+	if len(args) == 1 {
+		pomCon, err = FromString(args[0])
+		if err != nil {
+			fmt.Printf("invalid pomcon: %v\n", err)
+			os.Exit(1)
+		}
 	}
 
 	config, err := loadConfig()
 	if err != nil {
 		log.Errorf("error loading config: %v", err)
-		os.Exit(1)
+		os.Exit(2)
 	}
-
-	// Initialize style
-	style := lipgloss.NewStyle().
-		Padding(1, 2)
 
 	// Initialize sound manager
 	soundManager := NewSoundManager(config.SoundConfig)
 	if err := soundManager.Init(); err != nil {
 		log.Errorf("error initializing sound manager: %v", err)
-		os.Exit(1)
+		os.Exit(2)
 	}
 
-	// Initialize model
-	model := Model{
-		state:  AppStateWaiting,
-		style:  style,
-		keys:   keys,
-		help:   help.New(),
-		config: config,
-		sound:  soundManager,
-	}
+	model := initModel(config, soundManager, pomCon)
 
 	// Start the program
 	p := tea.NewProgram(&model)
 	_, err = p.Run()
 	if err != nil {
 		fmt.Printf("error running program: %v\n", err)
-		os.Exit(1)
+		os.Exit(2)
 	}
 }

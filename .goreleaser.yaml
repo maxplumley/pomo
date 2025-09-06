@@ -19,9 +19,10 @@ builds:
   - env:
       - CGO_ENABLED=0
     goos:
-      # - linux # TODO: add linux support, not curretly working due to dependency on github.com/ebitengine/oto/v3 (via Beep)
+      # - linux # TODO: add linux support, not currently working due to dependency on github.com/ebitengine/oto/v3 (via Beep)
       - windows
       - darwin
+    # Note that default ldflags sets main.version
 
 archives:
   - formats: [tar.gz]

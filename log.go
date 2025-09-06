@@ -21,12 +21,9 @@ var (
 	debug   = flag.Bool("vv", false, "enable debug output")
 )
 
-func init() {
-	flag.Parse()
-}
-
 func initLogger() error {
 	// Determine log level based on flags
+	flag.Parse()
 	var level log.Level = log.WarnLevel
 	if *debug {
 		level = log.DebugLevel

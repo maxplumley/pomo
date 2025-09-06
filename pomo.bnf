@@ -1,0 +1,45 @@
+# The root rule defines a full command-line input as a sequence of elements.
+root ::= sequence
+
+# A sequence consists of one or more "elements" separated by whitespace.
+# Example: "2f 2:p 5b" is a sequence of three elements.
+sequence ::= element (ws element)*
+
+# An element can be either a single command (like "f" or "2:p") or a grouped sequence (like "2[f b]").
+element ::= command | group
+
+# A group is a sequence enclosed in square brackets, prefixed by a number indicating
+# how many times the sequence should be repeated.
+# Example: 2[2f p]
+group ::= number "[" ws? sequence ws? "]"
+
+# A command is a single session that may be prefixed with a multiplier.
+# Example: "3:f" means three default focus sessions.
+command ::= (number ":")? session
+
+# A session can be a simple focus/break session or a pomodoro session.
+session ::= simple | pomodoro
+
+# A simple session is a focus ('f') or break ('b') session, optionally prefixed by a duration.
+# Examples: "f", "2f", "5h30m b"
+simple ::= duration? ("f" | "b")
+
+# A pomodoro session ('p') can be customized with durations for its focus and/or break components.
+# The order of the duration specifications (e.g., "2f5b" vs "5b2f") does not matter.
+# Examples: "p", "25fp", "25f5bp", "5b25fp"
+pomodoro ::= (pomodoro-f pomodoro-b? | pomodoro-b pomodoro-f?)? "p"
+pomodoro-f ::= duration "f"
+pomodoro-b ::= duration "b"
+
+# A duration can be a number (interpreted as minutes by default) or a combination of numbers with units.
+# Examples: "2", "2h", "2h30m", "15s"
+duration ::= time-part+ | number
+
+# A time-part is a number followed by a unit of time ('h', 'm', 's').
+time-part ::= number ("h" | "m" | "s")
+
+# A number is one or more digits.
+number ::= [0-9]+
+
+# Whitespace is one or more spaces or tabs.
+ws ::= [ \t]+

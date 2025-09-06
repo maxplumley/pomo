@@ -47,16 +47,17 @@ Then either run `./pomo` from the directory you cloned it to, or add it to your 
 
 ## Usage
 
-Start Pomo:
+Start an interactive Pomo session:
 
 ```shell
 pomo
 ```
 
 ### Key Bindings
+
 - `f`: Start focus session
 - `b`: Start break session
-- `[n]p`: Start `n` pomodoro sessions - a focus session followed by a break session, repeated n times 
+- `[n]p`: Start `n` pomodoro sessions - a focus session followed by a break session, repeated n times
 - `e`: End current session
 - `q`: Quit Pomo
 
@@ -100,6 +101,39 @@ sound:
   break-end: https://raw.githubusercontent.com/maxplumley/pomo/refs/heads/main/soundz/furby-uhoh.mp3
 ```
 
-## Debugging 
+### PomCon
+
+PomCon (*Pom*o *Con*figuration) provides a simple syntax for declaring complex combinations of focus and break sessions for Pomo. You can start Pomo in non-interactive mode (will exit immediatly after finishing the final session) by providing valid PomCon for Pomo to execute. For example, the command below starts Pomo and and immediately schedules a five minute break followed by a one hour focus session:
+
+```shell
+pomo '5b 1hf'
+```
+
+Some further examples are provided below:
+
+- `f` - a focus session with default duration
+- `b` - a break session with default duration
+- `p` - a pomodoro session with default focus and break durations
+- `2f` - a focus session with 2-minute duration
+- `2b` - a break session with 2-minute duration
+- `2hf` - a focus session with 2-hour duration
+- `2h2m2sf` - a focus session with 2-hour 2-minute and 2-second duration
+- `2fp` - a pomodoro session with 2-minute focus session and default break duration
+- `2f2bp` - a pomodoro session with 2-minute focus and break session durations
+- `2b2fp` - as above
+- `2:f` - two focus sessions each with default duration
+- `2:2f` - two 2-minute focus sessions
+- `2:2h2m2sf` - 2 focus sessions each with 2-hour 2-minute and 2-second duration
+- `2:p` - two pomodoro sessions each with default focus and break durations
+- `2:2f2bp` - two pomodoro sessions each with 2-minute focus and break session durations
+- `b f` - a break session of default duration followed by a focus session of default duration
+- `2:2b f` - two 2 minute break sessions followed by a focus session of default duration
+- `2b 2:2f2bp` - a 2-minute break session followed by two pomodoro sessions each with 2-minute focus and break session durations
+- `2b 2:p 2f` - a 2-minute break session followed by two pomodoro sessions with default durations followed by a 2-minute focus session
+- `2[2f 2p]` - a 2-minute focus session followed by two pomodoro sessions, repeated twice
+
+And for those that prefer something more concrete a [BNF](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form) is defined for [PomCon](./pomo.bnf).
+
+## Debugging
 
 Logs are written to `~/.pomo/_logs/pomo.log`. The default log level is `warn`. You can increase log verbosity by passing the `-v` (or `-vv` for debug logging) flag to `pomo`.
